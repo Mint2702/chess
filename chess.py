@@ -40,12 +40,16 @@ class Board:
 
 class Coordinate:
     def __init__(self, coordinate: str):
-        if self.validate(coordinate):
+        coordinate = self.validate(coordinate)
+        if coordinate:
             self.coordinate = coordinate
+            self.row = self.parce_row()
+            self.column = self.parce_column()
         else:
             self.coordinate = False
 
     def validate(self, coordinate: str) -> list or bool:
+        coordinate = coordinate.lower()
         if (
             ord(coordinate[0]) >= 97
             and ord(coordinate[0]) <= 104
@@ -56,6 +60,27 @@ class Coordinate:
         else:
             return False
 
+    def parce_row(self) -> int:
+        """ Converts row number to the first index for Board obj """
+
+        row = 8 - int(self.coordinate[1])
+        return row
+
+    def parce_column(self) -> int:
+        """ Converts column letter to the second index for Board obj """
+
+        column = ord(self.coordinate[0]) - 96
+        return column
+
+
+class Move:
+    def __init__(self, from_cor: Coordinate, to_cor: Coordinate):
+        self.from_cor = from_cor
+        self.to_cor = to_cor
+
+    def check_from_cor(self) -> str or bool:
+        pass
+
 
 class Gameplay:
     def __init__(self):
@@ -63,7 +88,7 @@ class Gameplay:
 
         self.status = "WHITE"
         self.moves = 1
-        Board()
+        self.board = Board()
         self.game_process()
 
     def change_status(self):
@@ -85,7 +110,7 @@ class Gameplay:
         1) If you want to exit just type 'exit'
         2) To make a move you need to type in coordinate of the figure that 
            needs to be moved, space and a coordinate of where you want your
-           figure to move. For example: 'A2 A3'
+           figure to move. For example: 'a2 a3' or 'F2 H3'
         3) If you want to see how many moves were made, type in 'moves'
 
         """
@@ -158,7 +183,7 @@ class Gameplay:
             coordinates = self.process_input(inp)
             if coordinates:
                 for coordinate in coordinates:
-                    print(coordinate.coordinate)
+                    print(coordinate.column)
             else:
                 print("AIAIAI")
 
