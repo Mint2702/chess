@@ -2,9 +2,12 @@ import sys
 
 
 class Board:
-    def __init__(self):
-        self.board_init()
-        self.print_board()
+    def __init__(self, board=None):
+        if not board:
+            self.board_init()
+            self.print_board()
+        else:
+            self.board = board
 
     def board_init(self):
         """ Sets start values for board list """
@@ -37,18 +40,34 @@ class Board:
         print("║   A B C D E F G H   ║")
         print("╚═════════════════════╝")
 
+    def get_figure(self, coordinate) -> str:
+        """ Gets figure in given coordinate """
+
+        figure = self.board[coordinate.row][coordinate.column]
+        return figure
+
 
 class Coordinate:
-    def __init__(self, coordinate: str):
-        coordinate = self.validate(coordinate)
-        if coordinate:
-            self.coordinate = coordinate
-            self.row = self.parce_row()
-            self.column = self.parce_column()
+    def __init__(self, coordinate: str or list):
+        if type(coordinate) == str:
+            coordinate = self.validate_str(coordinate)
+            if coordinate:
+                self.coordinate = coordinate
+                self.row = self.parce_row()
+                self.column = self.parce_column()
+            else:
+                self.coordinate = False
         else:
-            self.coordinate = False
+            if self.validate_list(coordinate):
+                self.row = int(coordinate[0])
+                self.column = int(coordinate[1])
+                self.coordinate = self.parce_from_list()
+            else:
+                self.coordinate = False
 
-    def validate(self, coordinate: str) -> list or bool:
+    def validate_str(self, coordinate: str) -> str or bool:
+        """ Validates str view of the coordinate """
+
         coordinate = coordinate.lower()
         if (
             ord(coordinate[0]) >= 97
@@ -57,6 +76,19 @@ class Coordinate:
             and ord(coordinate[1]) <= 56
         ):
             return coordinate
+        else:
+            return False
+
+    def validate_list(self, coordinate: list) -> bool:
+        """ Validates list view of the coordinate """
+
+        if (
+            coordinate[0] < 8
+            and coordinate[0] >= 0
+            and coordinate[1] <= 8
+            and coordinate[1] >= 1
+        ):
+            return True
         else:
             return False
 
@@ -72,14 +104,66 @@ class Coordinate:
         column = ord(self.coordinate[0]) - 96
         return column
 
+    def parce_from_list(self) -> str:
+        """ Converts two indexes into a str view of the coordinate """
 
-class Move:
-    def __init__(self, from_cor: Coordinate, to_cor: Coordinate):
+        str_row = str(8 - self.row)
+        str_column = ord(95 + self.column)
+        return str_column + str_row
+
+
+class Figure:
+    def __init__(self, name: str, color: str, coordinate: Coordinate):
+        self.name = name
+        self.color = color
+        self.position = coordinate
+        self.legal_moves = []
+
+
+class Pawn(Figure, Board):
+    def __init__(self, color: str, coordinate: Coordinate, board: Board):
+        Board.__init__(self, board)
+        Figure.__init__(self, "P", color, coordinate)
+
+    def get_moves(self):
+        if self.board[self.position.row + 1][self.position.column] == "•":
+            forward = Coordinate([self.position.row + 1, self.position.column])
+            self.legal_moves.append(forward)
+
+
+class Move(Board):
+    def __init__(
+        self, from_cor: Coordinate, to_cor: Coordinate, board: list, color: str
+    ):
+        Board.__init__(self, board)
         self.from_cor = from_cor
         self.to_cor = to_cor
+        self.color = color
+        self.figure = None
 
-    def check_from_cor(self) -> str or bool:
-        pass
+    def check_from_cor(self) -> bool:
+        """ Checks if the start position has a figure on it """
+
+        if self.get_figure(self.from_cor) != "•":
+            return True
+        else:
+            return False
+
+    def validate_move(self) -> bool:
+        """ Checks if the given move is legal """
+
+        if self.check_from_cor():
+            print("Legal")
+            self.set_figure()
+            return True
+        else:
+            print("No figure on the first coordinate")
+            return False
+
+    def set_figure(self):
+        figure_name = self.get_figure(self.from_cor)
+        if figure_name == "P":
+            self.figure = Pawn(self.color, self.from_cor, self.board)
 
 
 class Gameplay:
@@ -112,6 +196,7 @@ class Gameplay:
            needs to be moved, space and a coordinate of where you want your
            figure to move. For example: 'a2 a3' or 'F2 H3'
         3) If you want to see how many moves were made, type in 'moves'
+        4) If you want to read instruction again, type in 'instruction'
 
         """
         )
@@ -134,7 +219,7 @@ class Gameplay:
             sys.exit(1)
 
         def wrong_input():
-            print("Please check your input and try again")
+            print("Please check the format of your input and try again")
             return False
 
         def check_coordinates(coordinates: list) -> bool:
@@ -149,6 +234,9 @@ class Gameplay:
             exit_chess()
         elif inp == "moves":
             self.show_moves()
+            return False
+        elif inp == "instruction":
+            self.print_instructions()
             return False
 
         try:
@@ -165,7 +253,6 @@ class Gameplay:
                     and to_cor.coordinate
                     and from_cor.coordinate != to_cor.coordinate
                 ):
-                    self.change_status()  # Надо будет переместить в другое место
                     return from_cor, to_cor
                 else:
                     return wrong_input()
@@ -181,11 +268,14 @@ class Gameplay:
         while True:
             inp = self.player_input()
             coordinates = self.process_input(inp)
-            if coordinates:
-                for coordinate in coordinates:
-                    print(coordinate.column)
+            if coordinates:  # Coordinates are writen in the right format
+                move = Move(
+                    coordinates[0], coordinates[1], self.board.board, self.status
+                )
+                if move.validate_move():  # Move can be done
+                    self.change_status()
             else:
-                print("AIAIAI")
+                pass
 
 
 Gameplay()
