@@ -117,7 +117,7 @@ class Figure:
         self.name = name
         self.color = color
         self.position = coordinate
-        self.legal_moves = []
+        self.legal_moves = {"move": [], "kill": []}
 
 
 class Pawn(Figure, Board):
@@ -133,14 +133,14 @@ class Pawn(Figure, Board):
                 and self.position.row > 0
             ):
                 forward = Coordinate([self.position.row - 1, self.position.column])
-                self.legal_moves.append(forward)
+                self.legal_moves["move"].append(forward)
             if (
                 self.board[self.position.row - 1][self.position.column - 1].islower()
                 and self.position.row > 0
                 and self.position.column > 1
             ):
                 left_eat = Coordinate([self.position.row - 1, self.position.column - 1])
-                self.legal_moves.append(left_eat)
+                self.legal_moves["kill"].append(left_eat)
             if (
                 self.board[self.position.row - 1][self.position.column + 1].islower()
                 and self.position.row > 0
@@ -149,22 +149,21 @@ class Pawn(Figure, Board):
                 right_eat = Coordinate(
                     [self.position.row - 1, self.position.column + 1]
                 )
-                self.legal_moves.append(right_eat)
+                self.legal_moves["kill"].append(right_eat)
         else:
             if (
                 self.board[self.position.row + 1][self.position.column] == "•"
                 and self.position.row < 7
             ):
-                print(self.color)
                 forward = Coordinate([self.position.row + 1, self.position.column])
-                self.legal_moves.append(forward)
+                self.legal_moves["move"].append(forward)
             if (
                 self.board[self.position.row + 1][self.position.column - 1].islower()
                 and self.position.row < 7
                 and self.position.column > 1
             ):
                 left_eat = Coordinate([self.position.row + 1, self.position.column - 1])
-                self.legal_moves.append(left_eat)
+                self.legal_moves["kill"].append(left_eat)
             if (
                 self.board[self.position.row + 1][self.position.column + 1].islower()
                 and self.position.row < 7
@@ -173,12 +172,15 @@ class Pawn(Figure, Board):
                 right_eat = Coordinate(
                     [self.position.row + 1, self.position.column + 1]
                 )
-                self.legal_moves.append(right_eat)
+                self.legal_moves["kill"].append(right_eat)
 
     def get_moves(self):
-        legal_moves_str = [move.coordinate for move in self.legal_moves]
+        legal_moves_str = [move.coordinate for move in self.legal_moves["move"]]
+        legal_kills_str = [move.coordinate for move in self.legal_moves["kill"]]
         print(legal_moves_str)
-        return legal_moves_str
+        print(legal_kills_str)
+        all_moves_str = {"move": legal_moves_str, "kill": legal_kills_str}
+        return all_moves_str
 
 
 class Move(Board):
@@ -210,7 +212,10 @@ class Move(Board):
     def check_to_cor(self, moves: list) -> bool:
         """ Checks if the to coordinate is in the legal moves list of the figure that is chosen """
 
-        if moves.count(self.to_cor.coordinate) == 1:
+        if (
+            moves["move"].count(self.to_cor.coordinate) == 1
+            or moves["kill"].count(self.to_cor.coordinate) == 1
+        ):
             return True
         else:
             return False
@@ -219,14 +224,19 @@ class Move(Board):
         """ Checks if the given move is legal """
 
         if self.check_from_cor():
-            print("Legal")
             self.set_figure()
             moves = self.figure.get_moves()
-            self.check_to_cor(moves)
-            return True
+            if self.check_to_cor(moves):
+                return True
+            else:
+                print(f"Illegal move for figure {self.figure.name}")
+                return False
         else:
             print("No figure on the first coordinate or you've chozen oponent's figure")
             return False
+
+    def make_move(self):
+        pass
 
     def set_figure(self):
         """ Sets figure wich stands in the from coordinate """
