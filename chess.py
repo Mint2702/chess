@@ -1,4 +1,5 @@
 import sys
+from colorama import Fore, Style
 
 
 class Board:
@@ -34,7 +35,13 @@ class Board:
                 if j == 0 or j == 9:
                     print("║" + self.board[i][j] + "║", end=" ")
                 else:
-                    print(self.board[i][j], end=" ")
+                    if self.board[i][j].isupper():
+                        print(Fore.RED + self.board[i][j], end=" ")
+                    elif self.board[i][j].islower():
+                        print(Fore.BLUE + self.board[i][j], end=" ")
+                    else:
+                        print(self.board[i][j], end=" ")
+                print(Style.RESET_ALL, end="")
             print()
         print("║ ╚═════════════════╝ ║")
         print("║   A B C D E F G H   ║")
