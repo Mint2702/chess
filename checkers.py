@@ -1,4 +1,5 @@
 import sys
+from colorama import Fore, Style
 
 
 class Board:
@@ -13,14 +14,14 @@ class Board:
         """ Sets start values for board list """
 
         self.board = [
-            list("8rnbqkbnr8"),
-            list("7pppppppp7"),
-            list("6••••••••6"),
+            list("8•B•B•B•B8"),
+            list("7B•B•B•B•7"),
+            list("6•B•B•B•B6"),
             list("5••••••••5"),
             list("4••••••••4"),
-            list("3••••••••3"),
-            list("2PPPPPPPP2"),
-            list("1RNBQKBNR1"),
+            list("3W•W•W•W•3"),
+            list("2•W•W•W•W2"),
+            list("1W•W•W•W•1"),
         ]
 
     def print_board(self):
@@ -34,7 +35,18 @@ class Board:
                 if j == 0 or j == 9:
                     print("║" + self.board[i][j] + "║", end=" ")
                 else:
-                    print(self.board[i][j], end=" ")
+                    if self.board[i][j] == "B":
+                        print(Fore.RED + self.board[i][j], end=" ")
+                    elif self.board[i][j] == "W":
+                        print(Fore.BLUE + self.board[i][j], end=" ")
+                    elif self.board[i][j] == "•":
+                        if (i % 2 == 0 and j % 2 == 1) or (i % 2 == 1 and j % 2 == 0):
+                            print(self.board[i][j], end=" ")
+                        else:
+                            print(Fore.GREEN + self.board[i][j], end=" ")
+                    else:
+                        print(self.board[i][j], end=" ")
+                    print(Style.RESET_ALL, end="")
             print()
         print("║ ╚═════════════════╝ ║")
         print("║   A B C D E F G H   ║")
@@ -120,63 +132,135 @@ class Figure:
         self.legal_moves = {"move": [], "kill": []}
 
 
-class Pawn(Figure, Board):
+class Checker(Figure, Board):
     def __init__(self, color: str, coordinate: Coordinate, board: Board):
         Board.__init__(self, board)
         if color == "WHITE":
-            name = "P"
+            name = "W"
         else:
-            name = "p"
+            name = "B"
         Figure.__init__(self, name, color, coordinate)
         self.set_moves()
 
     def set_moves(self):
         if self.color == "WHITE":
             if (
-                self.board[self.position.row - 1][self.position.column] == "•"
+                self.board[self.position.row - 1][self.position.column - 1] == "•"
                 and self.position.row > 0
+                and self.position.column > 0
             ):
-                forward = Coordinate([self.position.row - 1, self.position.column])
-                self.legal_moves["move"].append(forward)
+                forward_left = Coordinate(
+                    [self.position.row - 1, self.position.column - 1]
+                )
+                self.legal_moves["move"].append(forward_left)
             if (
-                self.board[self.position.row - 1][self.position.column - 1].islower()
-                and self.position.row > 0
-                and self.position.column > 1
-            ):
-                left_eat = Coordinate([self.position.row - 1, self.position.column - 1])
-                self.legal_moves["kill"].append(left_eat)
-            if (
-                self.board[self.position.row - 1][self.position.column + 1].islower()
+                self.board[self.position.row - 1][self.position.column + 1] == "•"
                 and self.position.row > 0
                 and self.position.column < 8
             ):
-                right_eat = Coordinate(
+                forward_right = Coordinate(
                     [self.position.row - 1, self.position.column + 1]
                 )
-                self.legal_moves["kill"].append(right_eat)
-        else:
+                self.legal_moves["move"].append(forward_right)
             if (
-                self.board[self.position.row + 1][self.position.column] == "•"
-                and self.position.row < 7
-            ):
-                forward = Coordinate([self.position.row + 1, self.position.column])
-                self.legal_moves["move"].append(forward)
-            if (
-                self.board[self.position.row + 1][self.position.column - 1].isupper()
-                and self.position.row < 7
+                self.board[self.position.row - 1][self.position.column - 1] == "B"
+                and self.position.row > 1
                 and self.position.column > 1
+                and self.board[self.position.row - 2][self.position.column - 2] == "•"
             ):
-                left_eat = Coordinate([self.position.row + 1, self.position.column - 1])
-                self.legal_moves["kill"].append(left_eat)
+                forward_left_eat = Coordinate(
+                    [self.position.row - 1, self.position.column - 1]
+                )
+                self.legal_moves["kill"].append(forward_left_eat)
             if (
-                self.board[self.position.row + 1][self.position.column + 1].isupper()
-                and self.position.row < 7
-                and self.position.column < 8
+                self.board[self.position.row - 1][self.position.column + 1] == "B"
+                and self.position.row > 1
+                and self.position.column < 7
+                and self.board[self.position.row - 2][self.position.column + 2] == "•"
             ):
-                right_eat = Coordinate(
+                forward_right_eat = Coordinate(
+                    [self.position.row - 1, self.position.column + 1]
+                )
+                self.legal_moves["kill"].append(forward_right_eat)
+            if (
+                self.board[self.position.row + 1][self.position.column - 1] == "B"
+                and self.position.row < 6
+                and self.position.column > 1
+                and self.board[self.position.row + 2][self.position.column - 2] == "•"
+            ):
+                back_left_eat = Coordinate(
+                    [self.position.row + 1, self.position.column - 1]
+                )
+                self.legal_moves["kill"].append(back_left_eat)
+            if (
+                self.board[self.position.row + 1][self.position.column + 1] == "B"
+                and self.position.row < 6
+                and self.position.column < 7
+                and self.board[self.position.row + 2][self.position.column + 2] == "•"
+            ):
+                back_right_eat = Coordinate(
                     [self.position.row + 1, self.position.column + 1]
                 )
-                self.legal_moves["kill"].append(right_eat)
+                self.legal_moves["kill"].append(back_right_eat)
+        else:
+            if (
+                self.board[self.position.row + 1][self.position.column - 1] == "•"
+                and self.position.row < 6
+                and self.position.column > 1
+            ):
+                forward_left = Coordinate(
+                    [self.position.row + 1, self.position.column - 1]
+                )
+                self.legal_moves["move"].append(forward_left)
+            if (
+                self.board[self.position.row + 1][self.position.column + 1] == "•"
+                and self.position.row < 6
+                and self.position.column < 7
+            ):
+                forward_right = Coordinate(
+                    [self.position.row + 1, self.position.column + 1]
+                )
+                self.legal_moves["move"].append(forward_right)
+            if (
+                self.board[self.position.row + 1][self.position.column - 1] == "W"
+                and self.position.row < 6
+                and self.position.column > 1
+                and self.board[self.position.row + 2][self.position.column - 2] == "•"
+            ):
+                forward_left_eat = Coordinate(
+                    [self.position.row + 1, self.position.column - 1]
+                )
+                self.legal_moves["kill"].append(forward_left_eat)
+            if (
+                self.board[self.position.row + 1][self.position.column + 1] == "W"
+                and self.position.row < 6
+                and self.position.column < 7
+                and self.board[self.position.row + 2][self.position.column + 2] == "•"
+            ):
+                forward_right_eat = Coordinate(
+                    [self.position.row + 1, self.position.column + 1]
+                )
+                self.legal_moves["kill"].append(forward_right_eat)
+            if (
+                self.board[self.position.row - 1][self.position.column - 1] == "W"
+                and self.position.row > 1
+                and self.position.column > 1
+                and self.board[self.position.row - 2][self.position.column - 2] == "•"
+            ):
+                back_left_eat = Coordinate(
+                    [self.position.row - 1, self.position.column - 1]
+                )
+                self.legal_moves["kill"].append(back_left_eat)
+            if (
+                self.board[self.position.row - 1][self.position.column + 1] == "W"
+                and self.position.row > 1
+                and self.position.column < 7
+                and self.board[self.position.row - 2][self.position.column + 2] == "•"
+            ):
+                back_right_eat = Coordinate(
+                    [self.position.row - 1, self.position.column + 1]
+                )
+                self.legal_moves["kill"].append(back_right_eat)
 
     def get_moves(self):
         legal_moves_str = [move.coordinate for move in self.legal_moves["move"]]
@@ -204,23 +288,22 @@ class Move(Board):
 
         if figure != "•":
             if (
-                figure.isupper()
+                figure == "W"
                 and self.color == "WHITE"
-                or figure.islower()
+                or figure == "B"
                 and self.color == "BLACK"
             ):
                 return True
         else:
             return False
 
-    def check_to_cor(self, moves: list) -> bool:
+    def check_to_cor(self, moves: list) -> bool or str:
         """ Checks if the to coordinate is in the legal moves list of the figure that is chosen """
 
-        if (
-            moves["move"].count(self.to_cor.coordinate) == 1
-            or moves["kill"].count(self.to_cor.coordinate) == 1
-        ):
-            return True
+        if moves["move"].count(self.to_cor.coordinate) == 1:
+            return "move"
+        elif moves["kill"].count(self.to_cor.coordinate) == 1:
+            return "kill"
         else:
             return False
 
@@ -230,8 +313,9 @@ class Move(Board):
         if self.check_from_cor():
             self.set_figure()
             moves = self.figure.get_moves()
-            if self.check_to_cor(moves):
-                return True
+            move_or_kill = self.check_to_cor(moves)
+            if move_or_kill:
+                return move_or_kill
             else:
                 print(f"Illegal move for figure {self.figure.name}")
                 return False
@@ -245,12 +329,21 @@ class Move(Board):
         self.board[self.from_cor.row][self.from_cor.column] = "•"
         self.board[self.to_cor.row][self.to_cor.column] = self.figure.name
 
+    def kill(self):
+        """ Kills oponent's checker """
+
+        self.board[self.from_cor.row][self.from_cor.column] = "•"
+        self.board[self.to_cor.row][self.to_cor.column] = "•"
+        x = self.to_cor.row - self.from_cor.row
+        y = self.to_cor.column - self.from_cor.column
+        self.board[self.to_cor.row + x][self.to_cor.column + y] = self.figure.name
+
     def set_figure(self):
         """ Sets figure wich stands in the from coordinate """
 
-        figure_name = self.get_figure(self.from_cor).lower()
-        if figure_name == "p":
-            self.figure = Pawn(self.color, self.from_cor, self.board)
+        figure_name = self.get_figure(self.from_cor)
+        if figure_name != "•":
+            self.figure = Checker(self.color, self.from_cor, self.board)
 
 
 class Gameplay:
@@ -276,7 +369,7 @@ class Gameplay:
         print(
             """
 
-                        Welcome to the game of chess!!!
+                        Welcome to the game of checkers!!!
                                 Instructions:
         1) If you want to exit just type 'exit'
         2) To make a move you need to type in coordinate of the figure that 
@@ -359,8 +452,13 @@ class Gameplay:
                 move = Move(
                     coordinates[0], coordinates[1], self.board.board, self.status
                 )
-                if move.validate_move():  # Move can be done
+                type_of_move = move.validate_move()
+                if type_of_move == "move":  # Move can be done
                     move.make_move()
+                    self.board.print_board()
+                    self.change_status()
+                elif type_of_move == "kill":
+                    move.kill()
                     self.board.print_board()
                     self.change_status()
             else:
