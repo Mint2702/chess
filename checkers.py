@@ -1,5 +1,6 @@
 import sys
 from colorama import Fore, Style
+from copy import deepcopy, copy
 
 
 class Board:
@@ -35,9 +36,9 @@ class Board:
                 if j == 0 or j == 9:
                     print("║" + self.board[i][j] + "║", end=" ")
                 else:
-                    if self.board[i][j] == "B":
+                    if self.board[i][j].lower() == "b":
                         print(Fore.RED + self.board[i][j], end=" ")
-                    elif self.board[i][j] == "W":
+                    elif self.board[i][j].lower() == "w":
                         print(Fore.BLUE + self.board[i][j], end=" ")
                     elif self.board[i][j] == "•":
                         if (i % 2 == 0 and j % 2 == 1) or (i % 2 == 1 and j % 2 == 0):
@@ -163,7 +164,8 @@ class Checker(Figure, Board):
                 )
                 self.legal_moves["move"].append(forward_right)
             if (
-                self.board[self.position.row - 1][self.position.column - 1] == "B"
+                self.board[self.position.row - 1][self.position.column - 1].upper()
+                == "B"
                 and self.position.row > 1
                 and self.position.column > 1
                 and self.board[self.position.row - 2][self.position.column - 2] == "•"
@@ -173,7 +175,8 @@ class Checker(Figure, Board):
                 )
                 self.legal_moves["kill"].append(forward_left_eat)
             if (
-                self.board[self.position.row - 1][self.position.column + 1] == "B"
+                self.board[self.position.row - 1][self.position.column + 1].upper()
+                == "B"
                 and self.position.row > 1
                 and self.position.column < 7
                 and self.board[self.position.row - 2][self.position.column + 2] == "•"
@@ -183,7 +186,8 @@ class Checker(Figure, Board):
                 )
                 self.legal_moves["kill"].append(forward_right_eat)
             if (
-                self.board[self.position.row + 1][self.position.column - 1] == "B"
+                self.board[self.position.row + 1][self.position.column - 1].upper()
+                == "B"
                 and self.position.row < 6
                 and self.position.column > 1
                 and self.board[self.position.row + 2][self.position.column - 2] == "•"
@@ -193,7 +197,8 @@ class Checker(Figure, Board):
                 )
                 self.legal_moves["kill"].append(back_left_eat)
             if (
-                self.board[self.position.row + 1][self.position.column + 1] == "B"
+                self.board[self.position.row + 1][self.position.column + 1].upper()
+                == "B"
                 and self.position.row < 6
                 and self.position.column < 7
                 and self.board[self.position.row + 2][self.position.column + 2] == "•"
@@ -222,7 +227,8 @@ class Checker(Figure, Board):
                 )
                 self.legal_moves["move"].append(forward_right)
             if (
-                self.board[self.position.row + 1][self.position.column - 1] == "W"
+                self.board[self.position.row + 1][self.position.column - 1].upper()
+                == "W"
                 and self.position.row < 6
                 and self.position.column > 1
                 and self.board[self.position.row + 2][self.position.column - 2] == "•"
@@ -232,7 +238,8 @@ class Checker(Figure, Board):
                 )
                 self.legal_moves["kill"].append(forward_left_eat)
             if (
-                self.board[self.position.row + 1][self.position.column + 1] == "W"
+                self.board[self.position.row + 1][self.position.column + 1].upper()
+                == "W"
                 and self.position.row < 6
                 and self.position.column < 7
                 and self.board[self.position.row + 2][self.position.column + 2] == "•"
@@ -242,7 +249,8 @@ class Checker(Figure, Board):
                 )
                 self.legal_moves["kill"].append(forward_right_eat)
             if (
-                self.board[self.position.row - 1][self.position.column - 1] == "W"
+                self.board[self.position.row - 1][self.position.column - 1].upper()
+                == "W"
                 and self.position.row > 1
                 and self.position.column > 1
                 and self.board[self.position.row - 2][self.position.column - 2] == "•"
@@ -252,7 +260,8 @@ class Checker(Figure, Board):
                 )
                 self.legal_moves["kill"].append(back_left_eat)
             if (
-                self.board[self.position.row - 1][self.position.column + 1] == "W"
+                self.board[self.position.row - 1][self.position.column + 1].upper()
+                == "W"
                 and self.position.row > 1
                 and self.position.column < 7
                 and self.board[self.position.row - 2][self.position.column + 2] == "•"
@@ -265,8 +274,132 @@ class Checker(Figure, Board):
     def get_moves(self):
         legal_moves_str = [move.coordinate for move in self.legal_moves["move"]]
         legal_kills_str = [move.coordinate for move in self.legal_moves["kill"]]
-        print(legal_moves_str)
-        print(legal_kills_str)
+        all_moves_str = {"move": legal_moves_str, "kill": legal_kills_str}
+        return all_moves_str
+
+
+class Damka(Figure):
+    def __init__(self, color: str, coordinate: Coordinate, board: Board):
+        Board.__init__(self, board)
+        if color == "WHITE":
+            name = "w"
+        else:
+            name = "b"
+        Figure.__init__(self, name, color, coordinate)
+        self.set_moves()
+
+    def set_moves(self):
+        check_x = copy(self.position.row)
+        check_y = copy(self.position.column)
+        while check_x <= 7 and check_y <= 8:
+            if self.board[check_x][check_y] == "•":
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["move"].append(legal_move)
+            elif self.color == "WHITE":
+                if (
+                    self.board[check_x][check_y].lower() == "b"
+                    and self.board[check_x + 1][check_y + 1] == "•"
+                ):
+                    legal_move = Coordinate([check_x, check_y])
+                    self.legal_moves["kill"].append(legal_move)
+                    break
+            elif self.color == "BLACK":
+                if (
+                    self.board[check_x][check_y].lower() == "w"
+                    and self.board[check_x + 1][check_y + 1] == "•"
+                ):
+                    legal_move = Coordinate([check_x, check_y])
+                    self.legal_moves["kill"].append(legal_move)
+                    break
+            else:
+                break
+            check_x += 1
+            check_y += 1
+
+        check_x = copy(self.position.row)
+        check_y = copy(self.position.column)
+        while check_x >= 0 and check_y > 0:
+            if self.board[check_x][check_y] == "•":
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["move"].append(legal_move)
+            elif self.color == "WHITE":
+                if (
+                    self.board[check_x][check_y].lower() == "b"
+                    and self.board[check_x - 1][check_y - 1] == "•"
+                ):
+                    legal_move = Coordinate([check_x, check_y])
+                    self.legal_moves["kill"].append(legal_move)
+                    break
+            elif self.color == "BLACK":
+                if (
+                    self.board[check_x][check_y].lower() == "w"
+                    and self.board[check_x - 1][check_y - 1] == "•"
+                ):
+                    legal_move = Coordinate([check_x, check_y])
+                    self.legal_moves["kill"].append(legal_move)
+                    break
+            else:
+                break
+            check_x -= 1
+            check_y -= 1
+
+        check_x = copy(self.position.row)
+        check_y = copy(self.position.column)
+        while check_x >= 0 and check_y <= 8:
+            if self.board[check_x][check_y] == "•":
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["move"].append(legal_move)
+            elif self.color == "WHITE":
+                if (
+                    self.board[check_x][check_y].lower() == "b"
+                    and self.board[check_x - 1][check_y + 1] == "•"
+                ):
+                    legal_move = Coordinate([check_x, check_y])
+                    self.legal_moves["kill"].append(legal_move)
+                    break
+            elif self.color == "BLACK":
+                if (
+                    self.board[check_x][check_y].lower() == "w"
+                    and self.board[check_x - 1][check_y + 1] == "•"
+                ):
+                    legal_move = Coordinate([check_x, check_y])
+                    self.legal_moves["kill"].append(legal_move)
+                    break
+            else:
+                break
+            check_x -= 1
+            check_y += 1
+
+        check_x = copy(self.position.row)
+        check_y = copy(self.position.column)
+        while check_x <= 7 and check_y > 0:
+            if self.board[check_x][check_y] == "•":
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["move"].append(legal_move)
+            elif self.color == "WHITE":
+                if (
+                    self.board[check_x][check_y].lower() == "b"
+                    and self.board[check_x + 1][check_y - 1] == "•"
+                ):
+                    legal_move = Coordinate([check_x, check_y])
+                    self.legal_moves["kill"].append(legal_move)
+                    break
+            elif self.color == "BLACK":
+                if (
+                    self.board[check_x][check_y].lower() == "w"
+                    and self.board[check_x + 1][check_y - 1] == "•"
+                ):
+                    legal_move = Coordinate([check_x, check_y])
+                    self.legal_moves["kill"].append(legal_move)
+                    break
+            else:
+                break
+            check_x += 1
+            check_y -= 1
+
+    def get_moves(self):
+        legal_moves_str = [move.coordinate for move in self.legal_moves["move"]]
+        legal_kills_str = [move.coordinate for move in self.legal_moves["kill"]]
         all_moves_str = {"move": legal_moves_str, "kill": legal_kills_str}
         return all_moves_str
 
@@ -284,13 +417,13 @@ class Move(Board):
     def check_from_cor(self) -> bool:
         """ Checks if the start position has a figure on it """
 
-        figure = self.get_figure(self.from_cor)
+        figure = self.get_figure(self.from_cor).lower()
 
         if figure != "•":
             if (
-                figure == "W"
+                figure == "w"
                 and self.color == "WHITE"
-                or figure == "B"
+                or figure == "b"
                 and self.color == "BLACK"
             ):
                 return True
@@ -327,7 +460,12 @@ class Move(Board):
         """ Changes figure position on bard """
 
         self.board[self.from_cor.row][self.from_cor.column] = "•"
-        self.board[self.to_cor.row][self.to_cor.column] = self.figure.name
+        if self.color == "WHITE" and self.to_cor.row == 0:
+            self.board[self.to_cor.row][self.to_cor.column] = "w"
+        elif self.color == "BLACK" and self.to_cor.row == 7:
+            self.board[self.to_cor.row][self.to_cor.column] = "b"
+        else:
+            self.board[self.to_cor.row][self.to_cor.column] = self.figure.name
 
     def kill(self):
         """ Kills oponent's checker """
@@ -336,7 +474,22 @@ class Move(Board):
         self.board[self.to_cor.row][self.to_cor.column] = "•"
         x = self.to_cor.row - self.from_cor.row
         y = self.to_cor.column - self.from_cor.column
-        self.board[self.to_cor.row + x][self.to_cor.column + y] = self.figure.name
+        if abs(x) > 1:
+            if x > 0:
+                x = 1
+            else:
+                x = -1
+        if abs(y) > 1:
+            if y > 0:
+                y = 1
+            else:
+                y = -1
+        if self.color == "WHITE" and self.to_cor.row + x == 0:
+            self.board[self.to_cor.row + x][self.to_cor.column + y] = "w"
+        elif self.color == "BLACK" and self.to_cor.row + x == 7:
+            self.board[self.to_cor.row + x][self.to_cor.column + y] = "b"
+        else:
+            self.board[self.to_cor.row + x][self.to_cor.column + y] = self.figure.name
         self.from_cor = Coordinate([self.to_cor.row + x, self.to_cor.column + y])
         self.set_figure()
         more_kills = self.figure.get_moves()["kill"]
@@ -348,8 +501,10 @@ class Move(Board):
         """ Sets figure wich stands in the from coordinate """
 
         figure_name = self.get_figure(self.from_cor)
-        if figure_name != "•":
+        if figure_name == "W" or figure_name == "B":
             self.figure = Checker(self.color, self.from_cor, self.board)
+        if figure_name == "w" or figure_name == "b":
+            self.figure = Damka(self.color, self.from_cor, self.board)
 
 
 class Gameplay:
@@ -380,9 +535,10 @@ class Gameplay:
         1) If you want to exit just type 'exit'
         2) To make a move you need to type in coordinate of the figure that 
            needs to be moved, space and a coordinate of where you want your
-           figure to move. For example: 'a2 a3' or 'F2 H3'
+           figure to move. For example: 'a3 b4' or 'F6 G5'
         3) If you want to see how many moves were made, type in 'moves'
         4) If you want to read instruction again, type in 'instruction'
+        5) To eat an oponent's checker you need to type it's coordinate
 
         """
         )
