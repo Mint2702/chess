@@ -337,6 +337,12 @@ class Move(Board):
         x = self.to_cor.row - self.from_cor.row
         y = self.to_cor.column - self.from_cor.column
         self.board[self.to_cor.row + x][self.to_cor.column + y] = self.figure.name
+        self.from_cor = Coordinate([self.to_cor.row + x, self.to_cor.column + y])
+        self.set_figure()
+        more_kills = self.figure.get_moves()["kill"]
+        if len(more_kills) >= 1:
+            self.to_cor = Coordinate(more_kills[0])
+            self.kill()
 
     def set_figure(self):
         """ Sets figure wich stands in the from coordinate """
