@@ -291,7 +291,7 @@ class Damka(Figure):
     def set_moves(self):
         check_x = copy(self.position.row)
         check_y = copy(self.position.column)
-        while check_x <= 7 and check_y <= 8:
+        while check_x + 1 <= 7 and check_y + 1 <= 8:
             if self.board[check_x][check_y] == "•":
                 legal_move = Coordinate([check_x, check_y])
                 self.legal_moves["move"].append(legal_move)
@@ -318,7 +318,7 @@ class Damka(Figure):
 
         check_x = copy(self.position.row)
         check_y = copy(self.position.column)
-        while check_x >= 0 and check_y > 0:
+        while check_x - 1 >= 0 and check_y - 1 > 0:
             if self.board[check_x][check_y] == "•":
                 legal_move = Coordinate([check_x, check_y])
                 self.legal_moves["move"].append(legal_move)
@@ -345,7 +345,7 @@ class Damka(Figure):
 
         check_x = copy(self.position.row)
         check_y = copy(self.position.column)
-        while check_x >= 0 and check_y <= 8:
+        while check_x - 1 >= 0 and check_y + 1 <= 8:
             if self.board[check_x][check_y] == "•":
                 legal_move = Coordinate([check_x, check_y])
                 self.legal_moves["move"].append(legal_move)
@@ -372,7 +372,7 @@ class Damka(Figure):
 
         check_x = copy(self.position.row)
         check_y = copy(self.position.column)
-        while check_x <= 7 and check_y > 0:
+        while check_x + 1 <= 7 and check_y - 1 > 0:
             if self.board[check_x][check_y] == "•":
                 legal_move = Coordinate([check_x, check_y])
                 self.legal_moves["move"].append(legal_move)
