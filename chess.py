@@ -21,11 +21,11 @@ class Board:
             list("5••••••••5"),
             list("4••••••••4"),
             list("3••••••••3"),
-            list("2PPP•••PP2"),
-            list("1RNB•K•NR1"),
+            list("2PPPPPPPP2"),
+            list("1RNBQKBNR1"),
         ]
 
-    def print_board(self):
+    def print_board(self, moves=None):
         """ Prints board """
 
         print("╔═════════════════════╗")
@@ -36,12 +36,29 @@ class Board:
                 if j == 0 or j == 9:
                     print("║" + self.board[i][j] + "║", end=" ")
                 else:
-                    if self.board[i][j].isupper():
-                        print(Fore.RED + self.board[i][j], end=" ")
-                    elif self.board[i][j].islower():
-                        print(Fore.BLUE + self.board[i][j], end=" ")
+                    if moves is None:
+                        if self.board[i][j].isupper():
+                            print(Fore.RED + self.board[i][j], end=" ")
+                        elif self.board[i][j].islower():
+                            print(Fore.BLUE + self.board[i][j], end=" ")
+                        else:
+                            print(self.board[i][j], end=" ")
                     else:
-                        print(self.board[i][j], end=" ")
+                        if self.board[i][j].isupper():
+                            if moves["kill"].count([i, j]) == 1:
+                                print(Fore.GREEN + self.board[i][j], end=" ")
+                            else:
+                                print(Fore.RED + self.board[i][j], end=" ")
+                        elif self.board[i][j].islower():
+                            if moves["kill"].count([i, j]) == 1:
+                                print(Fore.GREEN + self.board[i][j], end=" ")
+                            else:
+                                print(Fore.BLUE + self.board[i][j], end=" ")
+                        else:
+                            if moves["move"].count([i, j]) == 1:
+                                print(Fore.GREEN + self.board[i][j], end=" ")
+                            else:
+                                print(self.board[i][j], end=" ")
                 print(Style.RESET_ALL, end="")
             print()
         print("║ ╚═════════════════╝ ║")
@@ -130,6 +147,12 @@ class Figure:
     def get_moves(self):
         legal_moves_str = [move.coordinate for move in self.legal_moves["move"]]
         legal_kills_str = [move.coordinate for move in self.legal_moves["kill"]]
+        all_moves_str = {"move": legal_moves_str, "kill": legal_kills_str}
+        return all_moves_str
+
+    def get_cheat_moves(self):
+        legal_moves_str = [[move.row, move.column] for move in self.legal_moves["move"]]
+        legal_kills_str = [[move.row, move.column] for move in self.legal_moves["kill"]]
         all_moves_str = {"move": legal_moves_str, "kill": legal_kills_str}
         return all_moves_str
 
@@ -711,6 +734,32 @@ class Knight(Figure, Board):
                         self.legal_moves["kill"].append(legal_move)
 
 
+class Cheat_move(Board):
+    def __init__(self, cor: Coordinate, board: list, color: str):
+        Board.__init__(self, board)
+        self.cor = cor
+        self.color = color
+        self.figure = None
+        self.set_figure()
+
+    def set_figure(self):
+        """ Sets figure wich stands in the from coordinate """
+
+        figure_name = self.get_figure(self.cor).lower()
+        if figure_name == "p":
+            self.figure = Pawn(self.color, self.cor, self.board)
+        elif figure_name == "b":
+            self.figure = Bishop(self.color, self.cor, self.board)
+        elif figure_name == "r":
+            self.figure = Rook(self.color, self.cor, self.board)
+        elif figure_name == "q":
+            self.figure = Queen(self.color, self.cor, self.board)
+        elif figure_name == "k":
+            self.figure = King(self.color, self.cor, self.board)
+        else:
+            self.figure = Knight(self.color, self.cor, self.board)
+
+
 class Move(Board):
     def __init__(
         self, from_cor: Coordinate, to_cor: Coordinate, board: list, color: str
@@ -736,6 +785,12 @@ class Move(Board):
                 return True
         else:
             return False
+
+    def cheat_get_moves(self, flag):
+        if flag is None:
+            return None
+        else:
+            return self.figure.get_moves()
 
     def check_to_cor(self, moves: list) -> bool:
         """ Checks if the to coordinate is in the legal moves list of the figure that is chosen """
@@ -825,6 +880,8 @@ class Gameplay:
            figure to move. For example: 'a2 a3' or 'F2 H3'
         3) If you want to see how many moves were made, type in 'moves'
         4) If you want to read instruction again, type in 'instruction'
+        5) If you want to see all possible moves for your figure - type in 'cheat', 
+           then type in the coordinate of the your figure that needs to be checked
 
         """
         )
@@ -838,6 +895,13 @@ class Gameplay:
             inp = str(input("Move for black!\n"))
 
         return inp
+
+    def cheat_get(self) -> str:
+        print("Enter coordinates of your figure that you want to cheat with:")
+        inp = str(input("->"))
+        if len(inp) == 2:
+            cor = Coordinate(inp)
+        return cor
 
     def process_input(self, inp: str) -> list or bool:
         """ Converts input to list of coordinates, checks for 'exit' """
@@ -894,7 +958,15 @@ class Gameplay:
 
         self.print_instructions()
         while True:
+            self.cheat = None
             inp = self.player_input()
+            if inp == "cheat":
+                cor = self.cheat_get()
+                cheat_move = Cheat_move(cor, self.board.board, self.status)
+                print(cheat_move.figure.get_cheat_moves())
+                self.board.print_board(cheat_move.figure.get_cheat_moves())
+                continue
+
             coordinates = self.process_input(inp)
             if coordinates:  # Coordinates are writen in the right format
                 move = Move(
