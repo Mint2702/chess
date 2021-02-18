@@ -130,8 +130,6 @@ class Figure:
     def get_moves(self):
         legal_moves_str = [move.coordinate for move in self.legal_moves["move"]]
         legal_kills_str = [move.coordinate for move in self.legal_moves["kill"]]
-        print(legal_moves_str)
-        print(legal_kills_str)
         all_moves_str = {"move": legal_moves_str, "kill": legal_kills_str}
         return all_moves_str
 
@@ -675,6 +673,44 @@ class King(Figure, Board):
                     self.legal_moves["kill"].append(legal_move)
 
 
+class Knight(Figure, Board):
+    def __init__(self, color: str, coordinate: Coordinate, board: Board):
+        Board.__init__(self, board)
+        if color == "WHITE":
+            name = "N"
+        else:
+            name = "n"
+        Figure.__init__(self, name, color, coordinate)
+        self.set_moves()
+
+    def set_moves(self):
+        x = self.position.row
+        y = self.position.column
+        knight_list = [
+            [x + 1, y + 2],
+            [x - 1, y + 2],
+            [x + 1, y - 2],
+            [x - 1, y - 2],
+            [x + 2, y + 1],
+            [x - 2, y + 1],
+            [x + 2, y - 1],
+            [x - 2, y - 1],
+        ]
+        for i in knight_list:
+            if i[0] < 8 and i[0] >= 0 and i[1] > 0 and i[1] <= 8:
+                figure_check = self.board[i[0]][i[1]]
+                if figure_check == "•":
+                    legal_move = Coordinate([i[0], i[1]])
+                    self.legal_moves["move"].append(legal_move)
+                else:
+                    if self.color == "WHITE" and figure_check.islower():
+                        legal_move = Coordinate([i[0], i[1]])
+                        self.legal_moves["kill"].append(legal_move)
+                    elif self.color == "BLACK" and figure_check.isupper():
+                        legal_move = Coordinate([i[0], i[1]])
+                        self.legal_moves["kill"].append(legal_move)
+
+
 class Move(Board):
     def __init__(
         self, from_cor: Coordinate, to_cor: Coordinate, board: list, color: str
@@ -727,11 +763,18 @@ class Move(Board):
             print("No figure on the first coordinate or you've chozen oponent's figure")
             return False
 
+    def game_over(self):
+        print(f"{self.color} - won!")
+        sys.exit(1)
+
     def make_move(self):
         """ Changes figure position on bard """
 
         self.board[self.from_cor.row][self.from_cor.column] = "•"
-        self.board[self.to_cor.row][self.to_cor.column] = self.figure.name
+        if self.board[self.to_cor.row][self.to_cor.column].lower() == "k":
+            self.game_over()
+        else:
+            self.board[self.to_cor.row][self.to_cor.column] = self.figure.name
 
     def set_figure(self):
         """ Sets figure wich stands in the from coordinate """
@@ -747,6 +790,8 @@ class Move(Board):
             self.figure = Queen(self.color, self.from_cor, self.board)
         elif figure_name == "k":
             self.figure = King(self.color, self.from_cor, self.board)
+        else:
+            self.figure = Knight(self.color, self.from_cor, self.board)
 
 
 class Gameplay:
