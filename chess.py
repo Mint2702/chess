@@ -745,19 +745,25 @@ class Cheat_move(Board):
     def set_figure(self):
         """ Sets figure wich stands in the from coordinate """
 
-        figure_name = self.get_figure(self.cor).lower()
-        if figure_name == "p":
-            self.figure = Pawn(self.color, self.cor, self.board)
-        elif figure_name == "b":
-            self.figure = Bishop(self.color, self.cor, self.board)
-        elif figure_name == "r":
-            self.figure = Rook(self.color, self.cor, self.board)
-        elif figure_name == "q":
-            self.figure = Queen(self.color, self.cor, self.board)
-        elif figure_name == "k":
-            self.figure = King(self.color, self.cor, self.board)
+        figure_name = self.get_figure(self.cor)
+        if (self.color == "WHITE" and figure_name.isupper()) or (
+            self.color == "BLACK" and figure_name.islower()
+        ):
+            figure_name = figure_name.lower()
+            if figure_name == "p":
+                self.figure = Pawn(self.color, self.cor, self.board)
+            elif figure_name == "b":
+                self.figure = Bishop(self.color, self.cor, self.board)
+            elif figure_name == "r":
+                self.figure = Rook(self.color, self.cor, self.board)
+            elif figure_name == "q":
+                self.figure = Queen(self.color, self.cor, self.board)
+            elif figure_name == "k":
+                self.figure = King(self.color, self.cor, self.board)
+            else:
+                self.figure = Knight(self.color, self.cor, self.board)
         else:
-            self.figure = Knight(self.color, self.cor, self.board)
+            print("You've chosen oponent's figure")
 
 
 class Move(Board):
@@ -856,6 +862,7 @@ class Gameplay:
         self.status = "WHITE"
         self.moves = 1
         self.board = Board()
+        self.history = [deepcopy(self.board.board)]
         self.game_process()
 
     def change_status(self):
@@ -867,6 +874,12 @@ class Gameplay:
 
     def show_moves(self):
         print(f"The number of moves  -  {self.moves}.")
+
+    def back(self):
+        if len(self.history) > 1:
+            self.board.board = self.history.pop()
+        else:
+            print("Not enougth moves done.")
 
     def print_instructions(self):
         print(
@@ -882,6 +895,7 @@ class Gameplay:
         4) If you want to read instruction again, type in 'instruction'
         5) If you want to see all possible moves for your figure - type in 'cheat', 
            then type in the coordinate of the your figure that needs to be checked
+        6) If you want to go back a move, just type in 'back'
 
         """
         )
@@ -901,7 +915,8 @@ class Gameplay:
         inp = str(input("->"))
         if len(inp) == 2:
             cor = Coordinate(inp)
-        return cor
+            return cor
+        return None
 
     def process_input(self, inp: str) -> list or bool:
         """ Converts input to list of coordinates, checks for 'exit' """
@@ -962,11 +977,19 @@ class Gameplay:
             inp = self.player_input()
             if inp == "cheat":
                 cor = self.cheat_get()
-                cheat_move = Cheat_move(cor, self.board.board, self.status)
-                print(cheat_move.figure.get_cheat_moves())
-                self.board.print_board(cheat_move.figure.get_cheat_moves())
+                if cor:
+                    cheat_move = Cheat_move(cor, self.board.board, self.status)
+                    if cheat_move.figure:
+                        self.board.print_board(cheat_move.figure.get_cheat_moves())
+                else:
+                    print("Wrong input")
+                continue
+            elif inp == "back":
+                self.back()
+                self.board.print_board()
                 continue
 
+            self.history.append(deepcopy(self.board.board))
             coordinates = self.process_input(inp)
             if coordinates:  # Coordinates are writen in the right format
                 move = Move(
