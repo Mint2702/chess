@@ -223,7 +223,6 @@ class Bishop(Figure, Board):
         check_x = copy(self.position.row) + 1
         check_y = copy(self.position.column) + 1
         while check_x <= 7 and check_y <= 8:
-            print(self.board[check_x][check_y])
             if self.board[check_x][check_y] == "•":
                 legal_move = Coordinate([check_x, check_y])
                 self.legal_moves["move"].append(legal_move)
@@ -243,7 +242,6 @@ class Bishop(Figure, Board):
         check_x = copy(self.position.row) - 1
         check_y = copy(self.position.column) - 1
         while check_x >= 0 and check_y > 0:
-            print(self.board[check_x][check_y])
             if self.board[check_x][check_y] == "•":
                 legal_move = Coordinate([check_x, check_y])
                 self.legal_moves["move"].append(legal_move)
@@ -403,6 +401,186 @@ class Rook(Figure, Board):
             check_y -= 1
 
 
+class Queen(Figure, Board):
+    def __init__(self, color: str, coordinate: Coordinate, board: Board):
+        Board.__init__(self, board)
+        if color == "WHITE":
+            name = "Q"
+        else:
+            name = "q"
+        Figure.__init__(self, name, color, coordinate)
+        self.set_moves()
+
+    def set_moves(self):
+        check_x = copy(self.position.row) + 1
+        while check_x <= 7:
+            if self.board[check_x][self.position.column] == "•":
+                legal_move = Coordinate([check_x, self.position.column])
+                self.legal_moves["move"].append(legal_move)
+            elif (
+                self.color == "WHITE"
+                and self.board[check_x][self.position.column].islower()
+            ):
+                legal_move = Coordinate([check_x, self.position.column])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            elif (
+                self.color == "BLACK"
+                and self.board[check_x][self.position.column].isupper()
+            ):
+                legal_move = Coordinate([check_x, self.position.column])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            else:
+                break
+            check_x += 1
+
+        check_x = copy(self.position.row) - 1
+        while check_x >= 0:
+            if self.board[check_x][self.position.column] == "•":
+                legal_move = Coordinate([check_x, self.position.column])
+                self.legal_moves["move"].append(legal_move)
+            elif (
+                self.color == "WHITE"
+                and self.board[check_x][self.position.column].islower()
+            ):
+                legal_move = Coordinate([check_x, self.position.column])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            elif (
+                self.color == "BLACK"
+                and self.board[check_x][self.position.column].isupper()
+            ):
+                legal_move = Coordinate([check_x, self.position.column])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            else:
+                break
+            check_x -= 1
+
+        check_y = copy(self.position.column) + 1
+        while check_y <= 8:
+            if self.board[self.position.row][check_y] == "•":
+                legal_move = Coordinate([self.position.row, check_y])
+                self.legal_moves["move"].append(legal_move)
+            elif (
+                self.color == "WHITE"
+                and self.board[self.position.row][check_y].islower()
+            ):
+                legal_move = Coordinate([self.position.row, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            elif (
+                self.color == "BLACK"
+                and self.board[self.position.row][check_y].isupper()
+            ):
+                legal_move = Coordinate([self.position.row, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            else:
+                break
+            check_y += 1
+
+        check_y = copy(self.position.column) - 1
+        while check_y > 0:
+            if self.board[self.position.row][check_y] == "•":
+                legal_move = Coordinate([self.position.row, check_y])
+                self.legal_moves["move"].append(legal_move)
+            elif (
+                self.color == "WHITE"
+                and self.board[self.position.row][check_y].islower()
+            ):
+                legal_move = Coordinate([self.position.row, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            elif (
+                self.color == "BLACK"
+                and self.board[self.position.row][check_y].isupper()
+            ):
+                legal_move = Coordinate([self.position.row, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            else:
+                break
+            check_y -= 1
+
+        check_x = copy(self.position.row) + 1
+        check_y = copy(self.position.column) + 1
+        while check_x <= 7 and check_y <= 8:
+            if self.board[check_x][check_y] == "•":
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["move"].append(legal_move)
+            elif self.color == "WHITE" and self.board[check_x][check_y].islower():
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            elif self.color == "BLACK" and self.board[check_x][check_y].isupper():
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            else:
+                break
+            check_x += 1
+            check_y += 1
+
+        check_x = copy(self.position.row) - 1
+        check_y = copy(self.position.column) - 1
+        while check_x >= 0 and check_y > 0:
+            if self.board[check_x][check_y] == "•":
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["move"].append(legal_move)
+            elif self.color == "WHITE" and self.board[check_x][check_y].islower():
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            elif self.color == "BLACK" and self.board[check_x][check_y].isupper():
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            else:
+                break
+            check_x -= 1
+            check_y -= 1
+
+        check_x = copy(self.position.row) - 1
+        check_y = copy(self.position.column) + 1
+        while check_x >= 0 and check_y <= 8:
+            if self.board[check_x][check_y] == "•":
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["move"].append(legal_move)
+            elif self.color == "WHITE" and self.board[check_x][check_y].islower():
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            elif self.color == "BLACK" and self.board[check_x][check_y].isupper():
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            else:
+                break
+            check_x -= 1
+            check_y += 1
+
+        check_x = copy(self.position.row) + 1
+        check_y = copy(self.position.column) - 1
+        while check_x <= 7 and check_y > 0:
+            if self.board[check_x][check_y] == "•":
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["move"].append(legal_move)
+            elif self.color == "WHITE" and self.board[check_x][check_y].islower():
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            elif self.color == "BLACK" and self.board[check_x][check_y].isupper():
+                legal_move = Coordinate([check_x, check_y])
+                self.legal_moves["kill"].append(legal_move)
+                break
+            else:
+                break
+            check_x += 1
+            check_y -= 1
+
+
 class Move(Board):
     def __init__(
         self, from_cor: Coordinate, to_cor: Coordinate, board: list, color: str
@@ -471,6 +649,8 @@ class Move(Board):
             self.figure = Bishop(self.color, self.from_cor, self.board)
         elif figure_name == "r":
             self.figure = Rook(self.color, self.from_cor, self.board)
+        elif figure_name == "q":
+            self.figure = Queen(self.color, self.from_cor, self.board)
 
 
 class Gameplay:
